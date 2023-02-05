@@ -1122,7 +1122,6 @@ private:
      */
     nsecs_t getVsyncPeriodFromHWC() const REQUIRES(mStateLock);
     nsecs_t getVsyncPeriodFromHWCcb();
-    sp<DisplayDevice> getCurrentVsyncSource();
 
     void setHWCVsyncEnabled(PhysicalDisplayId id, hal::Vsync enabled) {
         mLastHWCVsyncState = enabled;
@@ -1205,8 +1204,10 @@ private:
     /*
      * Debugging & dumpsys
      */
-    void dumpAllLocked(const DumpArgs& args, std::string& result) const REQUIRES(mStateLock);
+    void dumpAllLocked(const DumpArgs& args, const std::string& compositionLayers,
+                       std::string& result) const REQUIRES(mStateLock);
     void dumpMini(std::string& result) const REQUIRES(mStateLock);
+
     void appendSfConfigString(std::string& result) const;
     void listLayersLocked(std::string& result) const;
     void dumpStatsLocked(const DumpArgs& args, std::string& result) const REQUIRES(mStateLock);
@@ -1674,12 +1675,12 @@ private:
         return mScheduler->getLayerFramerate(now, id);
     }
 
+    bool mPowerHintSessionEnabled;
+
     struct {
-        bool sessionEnabled = false;
-        nsecs_t commitStart;
-        nsecs_t compositeStart;
-        nsecs_t presentEnd;
-    } mPowerHintSessionData GUARDED_BY(kMainThreadContext);
+        bool late = false;
+        bool early = false;
+    } mPowerHintSessionMode;
 
     nsecs_t mAnimationTransactionTimeout = s2ns(5);
 
